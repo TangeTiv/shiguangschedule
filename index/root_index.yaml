@@ -491,3 +491,8 @@ schools:
     name: "安徽中医药高等专科学校"
     initial: "A"
     resource_folder: "AHZYYGZ"
+
+  - id: "XATU"
+    name: "西安工业大学"
+    initial: "X"
+    resource_folder: "XATU"
