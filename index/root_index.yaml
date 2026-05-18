@@ -501,3 +501,8 @@ schools:
     name: "南京工业大学"
     initial: "N"
     resource_folder: "NJTECH"
+
+  - id: "CAUC"
+    name: "中国民航大学"
+    initial: "Z"
+    resource_folder: "CAUC"  
