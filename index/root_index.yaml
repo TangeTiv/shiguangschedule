@@ -48,6 +48,11 @@ schools:
     initial: "C"
     resource_folder: "CQCST"
 
+  - id: "CQUT"
+    name: "重庆理工大学"
+    initial: "C"
+    resource_folder: "CQUT"
+
   - id: "CUST"
     name: "长春理工大学"
     initial: "C"
