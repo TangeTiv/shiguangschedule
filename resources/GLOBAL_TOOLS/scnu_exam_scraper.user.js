@@ -14,19 +14,13 @@
 
     var REQUEST_URL = "/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105";
 
-    // 各学期对应的 xqm 值
-    var SEMESTERS = [
-        { value: "3", label: "第1学期" },
-        { value: "12", label: "第2学期" },
-        { value: "16", label: "第3学期" }
-    ];
-
-    function getQueryParams(xqm) {
+    function getQueryParams() {
         var params = new URLSearchParams();
 
         var xnmEl = document.getElementById("xnm");
+        var xqmEl = document.getElementById("xqm");
         params.set("xnm", xnmEl ? xnmEl.value : "");
-        params.set("xqm", xqm);
+        params.set("xqm", xqmEl ? xqmEl.value : "");
         params.set("ksmcdmb_id", "");
         params.set("kch", "");
         params.set("kc", "");
@@ -44,9 +38,8 @@
         return params;
     }
 
-    function fetchExams(xqm) {
-        var params = getQueryParams(xqm);
-        console.log("[抓取考试] xqm=" + xqm + " 参数:", params.toString());
+    function fetchExams() {
+        var params = getQueryParams();
 
         return fetch(REQUEST_URL, {
             method: "POST",
@@ -94,21 +87,14 @@
     function renderTable(tbody, data) {
         tbody.innerHTML = "";
         if (data.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='8' style='text-align:center;color:#999;padding:20px;'>无数据</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;color:#999;padding:20px;'>无数据</td></tr>";
             return;
         }
-        // 按学期、考试日期排序
-        data.sort(function (a, b) {
-            var sA = a.semester || "", sB = b.semester || "";
-            if (sA !== sB) return sA.localeCompare(sB);
-            return a.examDate.localeCompare(b.examDate);
-        });
         for (var i = 0; i < data.length; i++) {
             var tr = document.createElement("tr");
             var dateHtml = data[i].examDate.replace(/\(/, "<br>(");
             tr.innerHTML =
-                "<td style='padding:6px 10px;border-bottom:1px solid #eee;width:45px;'>" + (i + 1) + "</td>" +
-                "<td style='padding:6px 10px;border-bottom:1px solid #eee;width:45px;'>" + esc(data[i].semester || "") + "</td>" +
+                "<td style='padding:6px 10px;border-bottom:1px solid #eee;'>" + (i + 1) + "</td>" +
                 "<td style='padding:6px 10px;border-bottom:1px solid #eee;'>" + esc(data[i].courseName) + "</td>" +
                 "<td style='padding:6px 10px;border-bottom:1px solid #eee;'>" + dateHtml + "</td>" +
                 "<td style='padding:6px 10px;border-bottom:1px solid #eee;'>" + esc(data[i].location) + "</td>" +
@@ -147,7 +133,7 @@
             '<div style="overflow:auto;flex:1;">' +
             '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
             '<thead><tr style="background:#f0f0f0;">' +
-            '<th style="padding:6px 8px;text-align:left;border-bottom:1px solid #ddd;width:45px;">学期</th>' +
+            '<th style="padding:6px 8px;text-align:left;border-bottom:1px solid #ddd;width:35px;">#</th>' +
             '<th style="padding:6px 8px;text-align:left;border-bottom:1px solid #ddd;">课程</th>' +
             '<th style="padding:6px 8px;text-align:left;border-bottom:1px solid #ddd;width:130px;">考试时间</th>' +
             '<th style="padding:6px 8px;text-align:left;border-bottom:1px solid #ddd;width:120px;">地点</th>' +
@@ -170,15 +156,14 @@
             var data = [];
             for (var i = 0; i < rows.length; i++) {
                 var cells = rows[i].querySelectorAll("td");
-                if (cells.length >= 8) {
+                if (cells.length >= 7) {
                     data.push({
-                        semester: cells[1].textContent,
-                        courseName: cells[2].textContent,
-                        examDate: cells[3].innerHTML.replace(/<br>.*/, ""),
-                        location: cells[4].textContent,
-                        examType: cells[5].textContent,
-                        credit: cells[6].textContent,
-                        teacher: cells[7].textContent
+                        courseName: cells[1].textContent,
+                        examDate: cells[2].innerHTML.replace(/<br>.*/, ""),
+                        location: cells[3].textContent,
+                        examType: cells[4].textContent,
+                        credit: cells[5].textContent,
+                        teacher: cells[6].textContent
                     });
                 }
             }
@@ -200,48 +185,19 @@
             var statusEl = document.getElementById("gm_status");
             var tableBody = document.getElementById("gm_body");
             var countEl = document.getElementById("gm_count");
-            countEl.textContent = "0";
-            tableBody.innerHTML = "";
+            statusEl.textContent = "请求中...";
 
-            // 串行请求每个学期
-            var allResults = [];
-            var semesterIndex = 0;
-
-            function nextSemester() {
-                if (semesterIndex >= SEMESTERS.length) {
-                    // 全部完成
-                    renderTable(tableBody, allResults);
-                    countEl.textContent = allResults.length;
-                    statusEl.textContent = "抓取完成！共 " + allResults.length + " 场考试";
-                    btn.disabled = false;
-                    btn.textContent = "抓取考试";
-                    return;
-                }
-
-                var sem = SEMESTERS[semesterIndex];
-                statusEl.textContent = "正在抓取 " + sem.label + "...";
-
-                fetchExams(sem.value).then(function (items) {
-                    if (items && items.length > 0) {
-                        var results = items.map(extractItem);
-                        for (var i = 0; i < results.length; i++) {
-                            results[i].semester = sem.label;
-                        }
-                        allResults.push.apply(allResults, results);
-                        statusEl.textContent = sem.label + " 获取到 " + results.length + " 场";
-                    } else {
-                        statusEl.textContent = sem.label + " 无考试";
-                    }
-                    semesterIndex++;
-                    nextSemester();
-                }).catch(function (err) {
-                    statusEl.textContent = sem.label + " 失败: " + err.message;
-                    semesterIndex++;
-                    nextSemester();
-                });
-            }
-
-            nextSemester();
+            fetchExams().then(function (rawItems) {
+                var results = rawItems.map(extractItem);
+                countEl.textContent = results.length;
+                renderTable(tableBody, results);
+                statusEl.textContent = "抓取完成！共 " + results.length + " 场考试";
+            }).catch(function (err) {
+                statusEl.textContent = "失败: " + err.message;
+            }).finally(function () {
+                btn.disabled = false;
+                btn.textContent = "抓取考试";
+            });
         };
 
         var searchBtn = document.getElementById("search_go");
