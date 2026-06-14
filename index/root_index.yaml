@@ -442,6 +442,11 @@ schools:
     initial: "Z"
     resource_folder: "SCUEC"
 
+  - id: "SCNU"
+    name: "华南师范大学"
+    initial: "H"
+    resource_folder: "SCNU"
+
   - id: "UZZ"
     name: "枣庄学院"
     initial: "Z"
