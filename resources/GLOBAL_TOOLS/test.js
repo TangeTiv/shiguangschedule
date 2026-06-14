@@ -157,6 +157,12 @@
     function fetchScores() {
         console.log("成绩抓取脚本开始执行...");
 
+        // 调试：显示即将发出的请求参数，与浏览器对比
+        var debugParams = getQueryParams();
+        if (debugParams) {
+            alert("请求参数:\n" + debugParams.toString());
+        }
+
         var allItems = [];
 
         fetchPage(1, allItems)
