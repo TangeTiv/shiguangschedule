@@ -14,6 +14,13 @@
 
     var REQUEST_URL = "/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105";
 
+    // 获取当前学期值，未选择时默认第2学期
+    function getCurrentXqm() {
+        var el = document.querySelector('[name="xqm"]') || document.getElementById("xqm");
+        var val = el ? el.value : "";
+        return val || "12";
+    }
+
     function getQueryParams() {
         var params = new URLSearchParams();
 
