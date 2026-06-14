@@ -15,26 +15,26 @@
     var REQUEST_URL = "/kwgl/kscx_cxXsksxxIndex.html?doType=query&gnmkdm=N358105";
 
     function getQueryParams() {
-        var form = document.getElementById("searchForm");
-        if (!form) throw new Error("未找到 searchForm");
-
         var params = new URLSearchParams();
-        var elements = form.elements;
-        for (var i = 0; i < elements.length; i++) {
-            var el = elements[i];
-            if (el.name && el.name !== "" && el.name !== "autocomplete" && el.type !== "submit") {
-                params.append(el.name, el.value);
-            }
-        }
 
-        // 参考成绩查询的参数格式
+        // 精确匹配浏览器"查询"按钮发送的参数
+        var xnmEl = document.getElementById("xnm");
+        var xqmEl = document.getElementById("xqm");
+        params.set("xnm", xnmEl ? xnmEl.value : "");
+        params.set("xqm", xqmEl ? xqmEl.value : "");
+        params.set("ksmcdmb_id", "");
+        params.set("kch", "");
+        params.set("kc", "");
+        params.set("ksrq", "");
+        params.set("kkbm_id", "");
+
         params.set("_search", "false");
         params.set("nd", String(Date.now()));
         params.set("queryModel.showCount", "15");
         params.set("queryModel.currentPage", "1");
         params.set("queryModel.sortName", " ");
         params.set("queryModel.sortOrder", "asc");
-        params.set("time", "0");
+        params.set("time", "1");
 
         return params;
     }
