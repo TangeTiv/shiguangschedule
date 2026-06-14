@@ -132,18 +132,21 @@
             // 首次请求时读取分页信息
             if (totalResult === undefined) {
                 totalResult = data.totalResult || data.totalCount || 0;
-                var pageSize = data.pageSize || data.showCount || 15;
-                var totalPages = Math.ceil(totalResult / pageSize);
+                var firstPageSize = data.items ? data.items.length : 0;
 
-                // 如果只有一页，直接返回
-                if (totalPages <= 1) return;
+                // 用第一页实际返回条数反推页大小，避免 API 返回的 pageSize 与实情不符
+                if (firstPageSize > 0 && totalResult > firstPageSize) {
+                    var totalPages = Math.ceil(totalResult / firstPageSize);
+                    console.log("分页信息：totalResult=" + totalResult +
+                                ", firstPageSize=" + firstPageSize +
+                                ", totalPages=" + totalPages);
 
-                // 递归请求剩余页面
-                var promises = [];
-                for (var p = 2; p <= totalPages; p++) {
-                    promises.push(fetchPage(p, allItems, totalResult));
+                    var promises = [];
+                    for (var p = 2; p <= totalPages; p++) {
+                        promises.push(fetchPage(p, allItems, totalResult));
+                    }
+                    return Promise.all(promises);
                 }
-                return Promise.all(promises);
             }
         });
     }
