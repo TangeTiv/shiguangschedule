@@ -23,25 +23,17 @@
 
         var params = new URLSearchParams();
 
-        // 方式1：优先使用 FormData（不支持的浏览器回退到方式2）
-        if (typeof FormData !== "undefined") {
-            var formData = new FormData(form);
-            formData.forEach(function (value, key) {
-                params.append(key, value);
-            });
-        } else {
-            // 方式2：手动遍历表单元素
-            var elements = form.elements;
-            for (var i = 0; i < elements.length; i++) {
-                var el = elements[i];
-                if (el.name && el.name !== "" && el.type !== "submit") {
-                    params.append(el.name, el.value);
-                }
+        // 手动遍历表单元素，跳过 Chosen 插件动态生成的 autocomplete 干扰项
+        var elements = form.elements;
+        for (var i = 0; i < elements.length; i++) {
+            var el = elements[i];
+            if (el.name && el.name !== "" && el.name !== "autocomplete" && el.type !== "submit") {
+                params.append(el.name, el.value);
             }
         }
 
-        // 与服务端默认 pageSize 保持一致
-        params.set("rows", "15");
+        // 设置为足够大的值，确保一次返回全部数据
+        params.set("rows", "100");
 
         return params;
     }
@@ -156,12 +148,6 @@
      */
     function fetchScores() {
         console.log("成绩抓取脚本开始执行...");
-
-        // 调试：显示即将发出的请求参数，与浏览器对比
-        var debugParams = getQueryParams();
-        if (debugParams) {
-            alert("请求参数:\n" + debugParams.toString());
-        }
 
         var allItems = [];
 
