@@ -561,5 +561,11 @@
     <string name="campus_school_subtitle">一站式专属教务服务</string>
     <string name="campus_week_info">第 %1$d 周 · %2$s</string>
     <string name="campus_today_overview">今日速览</string>
+    <string name="campus_service_library">图书馆资源</string>
+    <string name="campus_service_library_desc">馆藏查询与借阅</string>
+    <string name="campus_service_transport">校园交通</string>
+    <string name="campus_service_transport_desc">校车与路线查询</string>
+    <string name="campus_service_channel">校园渠道</string>
+    <string name="campus_service_channel_desc">校园服务渠道</string>
 
 </resources>

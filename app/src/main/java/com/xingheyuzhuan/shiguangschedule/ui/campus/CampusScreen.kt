@@ -1,13 +1,12 @@
 package com.xingheyuzhuan.shiguangschedule.ui.campus
 
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,44 +20,59 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.Grading
+import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.R
-import com.xingheyuzhuan.shiguangschedule.data.model.ScheduleGridStyle
 import com.xingheyuzhuan.shiguangschedule.ui.components.BottomNavigationBar
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
+// color palette for the warm-toned campus section
+private val SurfaceBackgroundColor = Color(0xFFFCF9F8)
+private val CardBackgroundColor = Color(0xFFEFE8E4)
+private val TextPrimary = Color(0xFF333333)
+private val TextSecondary = Color(0xFF666666)
+
 /**
  * 校园 Dashboard 主页面。
  *
- * 包含全宽欢迎卡片（居中排版 + 今日速览胶囊行）和 2×2 功能导航网格，
- * 遵循 Material 3 规范。状态提升：通过 onNavigate 回调将导航事件委托给上层。
+ * 全新暖色调视觉设计：
+ * - 页面底色 #FCF9F8，凸显卡片阴影层次
+ * - WelcomeCard 全宽居中排版，Elevation = 8.dp
+ * - 支持有课程时显示「今日速览」胶囊行（CircleShape Pill）
+ * - 两级功能网格：主功能区（2列水平卡片）+ 次功能区（3列垂直卡片）
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,14 +84,29 @@ fun CampusScreen(
     val campusState by campusViewModel.campusState.collectAsState()
 
     Scaffold(
+        containerColor = SurfaceBackgroundColor,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
                         text = stringResource(R.string.campus_title_discover),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = TextPrimary
                     )
-                }
+                },
+                actions = {
+                    IconButton(onClick = { onNavigate(Destination.Settings) }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "设置",
+                            tint = TextSecondary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = SurfaceBackgroundColor
+                )
             )
         },
         bottomBar = {
@@ -91,27 +120,26 @@ fun CampusScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // 欢迎卡片（含今日速览胶囊行）
-            item { WelcomeCard(campusState) }
+            // 1. 欢迎卡片（含今日速览胶囊行）
+            item { WelcomeCard(state = campusState) }
 
-            item { Spacer(modifier = Modifier.height(8.dp)) }
-
-            // 分区标题
+            // 2. 教务与学业主功能区
             item {
                 Text(
                     text = stringResource(R.string.campus_section_academic),
-                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
+                    fontSize = 16.sp,
+                    color = TextPrimary,
+                    modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
                 )
+                PrimaryServiceGrid(onNavigate = onNavigate)
             }
 
-            // 双列功能网格
-            item { FeatureGrid(onNavigate = onNavigate) }
+            // 3. 校园服务次功能区
+            item { SecondaryServiceGrid() }
         }
     }
 }
@@ -119,13 +147,13 @@ fun CampusScreen(
 // region 欢迎卡片
 
 /**
- * 全宽横向欢迎卡片。
+ * 全宽横向欢迎卡片（暖色调）。
  *
- * 信息层级（居中对称排版）：
- * 1. 顶层：周次 + 星期（小号、浅色）
- * 2. 视觉中心：学校名称（最大、加粗）
- * 3. 副标题：服务描述
- * 4. 底部（有课时）：分割线 + 今日速览胶囊行
+ * 布局（全部居中对齐）：
+ * 1. 周次 + 星期（13sp，浅色）
+ * 2. 学校名称（26sp，ExtraBold）
+ * 3. 副标题（14sp）
+ * 4. 有课程时：24dp 间距 → 今日速览胶囊行（LazyRow，CircleShape）
  */
 @Composable
 private fun WelcomeCard(state: CampusUiState) {
@@ -134,53 +162,46 @@ private fun WelcomeCard(state: CampusUiState) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = CardBackgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(28.dp),
+                .padding(top = 28.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 顶层：周次信息（次要、轻量）
             Text(
                 text = stringResource(R.string.campus_week_info, weekNumber ?: 1, dayOfWeekName),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+                fontSize = 13.sp,
+                color = TextSecondary
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // 视觉中心：学校名称
+            // 视觉中心：学校名称（最大、最粗）
             Text(
                 text = stringResource(R.string.campus_school_name),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                fontSize = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextPrimary
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // 副标题
             Text(
                 text = stringResource(R.string.campus_school_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                fontSize = 14.sp,
+                color = TextSecondary
             )
 
-            // 今日速览（仅在有课程数据时展示）
+            // 今日速览胶囊（仅在有课程数据时展示）
             if (state.todayCourses.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(20.dp))
-                HorizontalDivider(
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                TodayPreviewRow(courses = state.todayCourses)
+                Spacer(modifier = Modifier.height(24.dp))
+                CourseCapsuleRow(courses = state.todayCourses)
             }
         }
     }
@@ -191,192 +212,244 @@ private fun WelcomeCard(state: CampusUiState) {
 // region 今日速览胶囊行
 
 /**
- * 今日速览横向滚动行。
+ * 横向滚动的课程胶囊行（位于 WelcomeCard 内部）。
  *
- * 展示当日课程的精简胶囊列表，用户无需进入课表页面即可快速查看
- * 下节课的时间、名称与地点。
+ * 胶囊使用 CircleShape（两端完美半圆），白色半透明背景，
+ * 文本格式：「08:30 【课程名 - 地点】」。
  */
 @Composable
-private fun TodayPreviewRow(courses: List<TodayCourseDisplay>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.campus_today_overview),
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(
-                items = courses,
-                key = { "${it.courseName}_${it.startTime}" }
-            ) { course ->
-                TodayCapsule(course)
-            }
-        }
-    }
-}
-
-/**
- * 单个胶囊组件。
- *
- * Pill-shape（CircleShape）半透明背景，展示时间、课程名、地点。
- * 颜色来源于课程原色，支持深色/浅色模式自动适配。
- */
-@Composable
-private fun TodayCapsule(course: TodayCourseDisplay) {
-    val isDark = isSystemInDarkTheme()
-    val colorMaps = ScheduleGridStyle.DEFAULT_COLOR_MAPS
-    val dualColor = colorMaps[course.colorIndex % colorMaps.size]
-    val bgColor = (if (isDark) dualColor.dark else dualColor.light).copy(alpha = 0.25f)
-    val contentColor = if (isDark) dualColor.dark else dualColor.light
-
-    Surface(
-        shape = CircleShape,
-        color = bgColor,
-        tonalElevation = 1.dp
+private fun CourseCapsuleRow(courses: List<TodayCourseDisplay>) {
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = course.startTime,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = contentColor
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = course.courseName,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = course.location,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
-            )
+        items(
+            items = courses,
+            key = { "${it.courseName}_${it.startTime}" }
+        ) { course ->
+            Surface(
+                shape = CircleShape,
+                color = Color.White.copy(alpha = 0.5f),
+                modifier = Modifier.height(36.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = course.startTime,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "【${course.courseName} - ${course.location}】",
+                        fontSize = 13.sp,
+                        color = TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
     }
 }
 
 // endregion
 
-// region 功能网格
+// region 主功能网格（2列水平卡片）
 
-private data class FeatureCardData(
-    val titleRes: Int,
-    val descRes: Int,
-    val icon: ImageVector,
-    val iconBgColor: Color,
-    val onClick: () -> Unit
-)
-
+/**
+ * 主功能区网格（2 列 × 2 行）。
+ *
+ * 水平排版 Card：40.dp 圆角图标 + 右侧标题与副标题。
+ */
 @Composable
-private fun FeatureGrid(onNavigate: (Destination) -> Unit) {
-    val cards = listOf(
-        FeatureCardData(
-            titleRes = R.string.campus_card_sync,
-            descRes = R.string.campus_card_sync_desc,
-            icon = Icons.Filled.Sync,
-            iconBgColor = Color(0xFF6366F1),
-            onClick = { onNavigate(Destination.SyncSelection) }
-        ),
-        FeatureCardData(
-            titleRes = R.string.campus_card_grades,
-            descRes = R.string.campus_card_grades_desc,
-            icon = Icons.Filled.Grading,
-            iconBgColor = Color(0xFF10B981),
-            onClick = { /* TODO: 成绩查询 */ }
-        ),
-        FeatureCardData(
-            titleRes = R.string.campus_card_exams,
-            descRes = R.string.campus_card_exams_desc,
-            icon = Icons.Filled.CalendarMonth,
-            iconBgColor = Color(0xFFF97316),
-            onClick = { /* TODO: 考试安排 */ }
-        ),
-        FeatureCardData(
-            titleRes = R.string.campus_card_map,
-            descRes = R.string.campus_card_map_desc,
-            icon = Icons.Filled.Map,
-            iconBgColor = Color(0xFFF43F5E),
-            onClick = { /* TODO: 校园地图 */ }
-        )
-    )
+private fun PrimaryServiceGrid(onNavigate: (Destination) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            ServiceCard(
+                icon = Icons.Filled.Sync,
+                iconBgColor = Color(0xFF6366F1),
+                title = stringResource(R.string.campus_card_sync),
+                subtitle = stringResource(R.string.campus_card_sync_desc),
+                onClick = { onNavigate(Destination.SyncSelection) },
+                modifier = Modifier.weight(1f)
+            )
+            ServiceCard(
+                icon = Icons.Filled.Grading,
+                iconBgColor = Color(0xFF10B981),
+                title = stringResource(R.string.campus_card_grades),
+                subtitle = stringResource(R.string.campus_card_grades_desc),
+                onClick = { /* TODO: 成绩查询 */ },
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            ServiceCard(
+                icon = Icons.Filled.CalendarMonth,
+                iconBgColor = Color(0xFFF97316),
+                title = stringResource(R.string.campus_card_exams),
+                subtitle = stringResource(R.string.campus_card_exams_desc),
+                onClick = { /* TODO: 考试安排 */ },
+                modifier = Modifier.weight(1f)
+            )
+            ServiceCard(
+                icon = Icons.Filled.Map,
+                iconBgColor = Color(0xFFF43F5E),
+                title = stringResource(R.string.campus_card_map),
+                subtitle = stringResource(R.string.campus_card_map_desc),
+                onClick = { /* TODO: 校园地图 */ },
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
 
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        for (row in cards.chunked(2)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+/**
+ * 单张主功能卡片（水平排版）。
+ * 左侧：40.dp 圆角图标背景盒 → 右侧：标题 + 副标题。
+ */
+@Composable
+private fun ServiceCard(
+    icon: ImageVector,
+    iconBgColor: Color,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.height(84.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 圆角图标背景
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(iconBgColor.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
             ) {
-                for (card in row) {
-                    FeatureCard(
-                        data = card,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                if (row.size < 2) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = iconBgColor,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = title,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    fontSize = 11.sp,
+                    color = TextSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
 }
 
+// endregion
+
+// region 次功能网格（3列垂直卡片）
+
+/**
+ * 次功能区网格（3 列横向排列）。
+ *
+ * 垂直排版 Card：36.dp 圆角图标 + 下方单行文字。
+ */
 @Composable
-private fun FeatureCard(
-    data: FeatureCardData,
+private fun SecondaryServiceGrid() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SmallServiceCard(
+            icon = Icons.Filled.LocalLibrary,
+            iconBgColor = Color(0xFFD97706),
+            title = stringResource(R.string.campus_service_library),
+            modifier = Modifier.weight(1f)
+        )
+        SmallServiceCard(
+            icon = Icons.Filled.DirectionsBus,
+            iconBgColor = Color(0xFF3B82F6),
+            title = stringResource(R.string.campus_service_transport),
+            modifier = Modifier.weight(1f)
+        )
+        SmallServiceCard(
+            icon = Icons.Filled.Campaign,
+            iconBgColor = Color(0xFF8B5CF6),
+            title = stringResource(R.string.campus_service_channel),
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+/**
+ * 单张次功能卡片（垂直排版）。
+ * 上方：36.dp 圆角图标 → 下方：标题文字。
+ */
+@Composable
+private fun SmallServiceCard(
+    icon: ImageVector,
+    iconBgColor: Color,
+    title: String,
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = data.onClick,
-        modifier = modifier.aspectRatio(1f),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        modifier = modifier.height(96.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = data.iconBgColor.copy(alpha = 0.1f),
-                modifier = Modifier.size(56.dp)
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(iconBgColor.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = data.icon,
-                        contentDescription = stringResource(data.titleRes),
-                        tint = data.iconBgColor,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = iconBgColor,
+                    modifier = Modifier.size(20.dp)
+                )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(data.titleRes),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(data.descRes),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 10.sp
+                text = title,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary,
+                maxLines = 1
             )
         }
     }
