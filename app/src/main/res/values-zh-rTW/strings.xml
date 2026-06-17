@@ -30,6 +30,7 @@
     <string name="nav_today_schedule">今日課表</string>
     <string name="nav_course_schedule">課表</string>
     <string name="nav_settings">我的</string>
+    <string name="nav_campus">校園</string>
     <string name="title_today_schedule">今日課表</string>
     <string name="text_no_courses_today">今天沒有課程</string>
     <string name="title_vacation_until_start">假期中（距離開學還有%1$s天）</string>
@@ -530,5 +531,32 @@
     <string name="item_sync_to_system_calendar">同步至系統行事曆</string>
     <string name="desc_sync_to_system_calendar">將目前课表一鍵同步至手機系統行事曆</string>
     <string name="toast_sync_calendar_success">同步成功</string>
+
+    <!-- 校园模块 -->
+    <string name="campus_title_discover">校園發現</string>
+    <string name="campus_section_academic">教務與學業</string>
+    <string name="campus_card_sync">教務同步</string>
+    <string name="campus_card_sync_desc">匯入課表與成績</string>
+    <string name="campus_card_grades">成績查詢</string>
+    <string name="campus_card_grades_desc">歷年成績與GPA</string>
+    <string name="campus_card_exams">考試安排</string>
+    <string name="campus_card_exams_desc">考場與倒計時</string>
+    <string name="campus_card_map">校園地圖</string>
+    <string name="campus_card_map_desc">一鍵呼起導航</string>
+    <string name="campus_sync_title">選擇同步內容</string>
+    <string name="campus_sync_description">請選擇您想要從華師教務系統同步的資料。為了加快速度，建議僅勾選需要更新的項。</string>
+    <string name="campus_sync_options">同步選項</string>
+    <string name="campus_sync_select_all">一鍵全選</string>
+    <string name="campus_sync_deselect_all">取消全選</string>
+    <string name="campus_sync_courses">學期課程表</string>
+    <string name="campus_sync_courses_desc">同步本學期的所有課程安排與上課地點</string>
+    <string name="campus_sync_grades">歷年成績單</string>
+    <string name="campus_sync_grades_desc">更新最新的考試成績並重新計算總 GPA</string>
+    <string name="campus_sync_exams">期中期末考試</string>
+    <string name="campus_sync_exams_desc">獲取最新的考場安排及座位號</string>
+    <string name="campus_sync_start">開始安全同步</string>
+    <string name="campus_school_name">華南師範大學</string>
+    <string name="campus_school_subtitle">一站式專屬教務服務</string>
+    <string name="campus_week_info">第 %1$d 週 · %2$s</string>
 
 </resources>

@@ -30,6 +30,7 @@
     <string name="nav_today_schedule">今日课表</string>
     <string name="nav_course_schedule">课表</string>
     <string name="nav_settings">我的</string>
+    <string name="nav_campus">校园</string>
     <string name="title_today_schedule">今日课表</string>
     <string name="text_no_courses_today">今天没有课程</string>
     <string name="title_vacation_until_start">假期中（距离开学还有%1$s天）</string>
@@ -532,5 +533,32 @@
     <string name="light_primary_color">浅色模式主色</string>
     <string name="dark_primary_color">深色模式主色</string>
     <string name="theme_color_hint">说明：改变此颜色后，系统将作为种子色重新计算全应用配色方案。</string>
+
+    <!-- 校园模块 -->
+    <string name="campus_title_discover">校园发现</string>
+    <string name="campus_section_academic">教务与学业</string>
+    <string name="campus_card_sync">教务同步</string>
+    <string name="campus_card_sync_desc">导入课表与成绩</string>
+    <string name="campus_card_grades">成绩查询</string>
+    <string name="campus_card_grades_desc">历年成绩与GPA</string>
+    <string name="campus_card_exams">考试安排</string>
+    <string name="campus_card_exams_desc">考场与倒计时</string>
+    <string name="campus_card_map">校园地图</string>
+    <string name="campus_card_map_desc">一键呼起导航</string>
+    <string name="campus_sync_title">选择同步内容</string>
+    <string name="campus_sync_description">请选择您想要从华师教务系统同步的数据。为了加快速度，建议仅勾选需要更新的项。</string>
+    <string name="campus_sync_options">同步选项</string>
+    <string name="campus_sync_select_all">一键全选</string>
+    <string name="campus_sync_deselect_all">取消全选</string>
+    <string name="campus_sync_courses">学期课程表</string>
+    <string name="campus_sync_courses_desc">同步本学期的所有课程安排与上课地点</string>
+    <string name="campus_sync_grades">历年成绩单</string>
+    <string name="campus_sync_grades_desc">更新最新的考试成绩并重新计算总 GPA</string>
+    <string name="campus_sync_exams">期中期末考试</string>
+    <string name="campus_sync_exams_desc">获取最新的考场安排及座位号</string>
+    <string name="campus_sync_start">开始安全同步</string>
+    <string name="campus_school_name">华南师范大学</string>
+    <string name="campus_school_subtitle">一站式专属教务服务</string>
+    <string name="campus_week_info">第 %1$d 周 · %2$s</string>
 
 </resources>
