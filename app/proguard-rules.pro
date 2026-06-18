@@ -96,5 +96,6 @@
 # --- 9. 数据模型与数据库 (Room) ---
 -keep class com.xingheyuzhuan.shiguangschedule.data.db.** { *; }
 -keep class com.xingheyuzhuan.shiguangschedule.data.model.** { *; }
+-keep class com.xingheyuzhuan.shiguangschedule.data.network.** { *; }
 -keep @androidx.room.Entity class * { *; }
 -keep class * extends androidx.room.RoomDatabase { *; }
