@@ -21,7 +21,7 @@ import javax.inject.Inject
  *
  * 核心推导链：
  * 1. examDao.getAll() 是唯一的 Room 订阅（热流）
- * 2. availableTerms 由 allExams 派生（提取 xqm 字段，去重 + 降序）
+ * 2. availableTerms 由 allExams 派生（从 kssj 反推学年学期，去重 + 降序）
  * 3. _selectedTerm 初始为 null，通过 combine 优雅回退到第一个可用学期
  * 4. displayedExams 通过 combine(allExams, availableTerms, _selectedTerm) 派生，
  *    并按 kssj 正序排列，空时间沉底
@@ -39,10 +39,11 @@ class ExamViewModel @Inject constructor(
 
     val allExams: StateFlow<List<ExamEntity>> = _allExams
 
-    // --- 学期列表（提取 xqm，去重 + 降序，无副作用） ---
+    // --- 学期列表（从 kssj 反推学年学期，去重 + 降序，无副作用） ---
 
     val availableTerms: StateFlow<List<String>> = _allExams.map { exams ->
-        exams.map { it.xqm }
+        exams.map { resolveTerm(it.kssj) }
+            .filter { it.isNotBlank() }
             .distinct()
             .sortedDescending()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -68,7 +69,7 @@ class ExamViewModel @Inject constructor(
     ) { exams, terms, selected ->
         val effectiveTerm = selected ?: terms.firstOrNull() ?: ""
         val filtered = if (effectiveTerm.isBlank()) exams
-        else exams.filter { it.xqm == effectiveTerm }
+        else exams.filter { resolveTerm(it.kssj) == effectiveTerm }
 
         // 按考试时间正序排列，空时间（待定）沉底
         filtered.sortedWith(
@@ -85,5 +86,28 @@ class ExamViewModel @Inject constructor(
      */
     fun selectTerm(term: String?) {
         _selectedTerm.value = term
+    }
+
+    // --- 纯函数：从考试时间反推学年学期 ---
+
+    /**
+     * 从 kssj（格式 "YYYY-MM-DD HH:MM"）反推可读的学年学期。
+     *
+     * 规则（中国高校学年）：
+     * - 9月～次年2月 → 第一学期，学年 = Y-1-Y（如 2024-2025）
+     * - 3月～7月       → 第二学期，学年 = Y-1-Y（如 2024-2025）
+     * - 其他月份或解析失败 → 返回 ""
+     */
+    private fun resolveTerm(kssj: String): String {
+        val parts = kssj.split("-")
+        val year = parts.getOrNull(0)?.toIntOrNull() ?: return ""
+        val month = parts.getOrNull(1)?.toIntOrNull() ?: return ""
+        val semester = when (month) {
+            in 9..12, in 1..2 -> "第一学期"
+            in 3..7 -> "第二学期"
+            else -> return ""
+        }
+        val academicYear = if (month in 1..2) "${year - 1}-$year" else "$year-${year + 1}"
+        return "$academicYear $semester"
     }
 }
