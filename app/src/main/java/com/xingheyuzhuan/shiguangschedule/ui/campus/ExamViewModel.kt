@@ -107,7 +107,7 @@ class ExamViewModel @Inject constructor(
             in 3..7 -> "第二学期"
             else -> return ""
         }
-        val academicYear = if (month in 1..2) "${year - 1}-$year" else "$year-${year + 1}"
+        val academicYear = if (month in 1..7) "${year - 1}-$year" else "$year-${year + 1}"
         return "$academicYear $semester"
     }
 }
