@@ -1,8 +1,12 @@
 package com.xingheyuzhuan.shiguangschedule.ui.campus
 
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,33 +18,47 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.R
 
@@ -74,10 +92,24 @@ data class SyncOptions(
 @Composable
 fun SyncSelectionScreen(
     onNavigate: (Destination) -> Unit,
-    onBack: () -> Unit,
-    onSyncStart: (SyncOptions) -> Unit = {}
+    onBack: () -> Unit
 ) {
+    val viewModel: CampusSyncViewModel = hiltViewModel()
+    val syncState by viewModel.syncUiState.collectAsState()
+    val savedAccount by viewModel.savedAccount.collectAsState()
+    val context = LocalContext.current
+
     var options by remember { mutableStateOf(SyncOptions()) }
+    var account by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    // 从 DataStore 自动预填上次成功登录的学号
+    LaunchedEffect(savedAccount) {
+        if (account.isEmpty() && savedAccount.isNotEmpty()) {
+            account = savedAccount
+        }
+    }
 
     val toggleOption: (String) -> Unit = { key ->
         options = when (key) {
@@ -116,119 +148,227 @@ fun SyncSelectionScreen(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-        ) {
-            // 内容区域（占据剩余空间）
+        Box(modifier = Modifier.fillMaxSize()) {
+            // ── 主内容区域（可滚动） ──
             Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 24.dp)
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 说明文字
-                Text(
-                    text = stringResource(R.string.campus_sync_description),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // 一键全选控制栏
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // 内容区域（占据剩余空间）
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 24.dp)
                 ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 说明文字
                     Text(
-                        text = stringResource(R.string.campus_sync_options),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
+                        text = stringResource(R.string.campus_sync_description),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // ── 账号密码输入区 ──
+                    OutlinedTextField(
+                        value = account,
+                        onValueChange = { account = it },
+                        label = { Text(stringResource(R.string.campus_sync_account_label)) },
+                        placeholder = { Text(stringResource(R.string.campus_sync_account_placeholder)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text(stringResource(R.string.campus_sync_password_label)) },
+                        placeholder = { Text(stringResource(R.string.campus_sync_password_placeholder)) },
+                        singleLine = true,
+                        visualTransformation = if (passwordVisible)
+                            VisualTransformation.None
+                        else
+                            PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible)
+                                        Icons.Filled.Visibility
+                                    else
+                                        Icons.Filled.VisibilityOff,
+                                    contentDescription = if (passwordVisible)
+                                        stringResource(R.string.a11y_hide_password)
+                                    else
+                                        stringResource(R.string.a11y_show_password)
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // 一键全选控制栏
                     Row(
-                        modifier = Modifier.clickable { toggleAll() },
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = if (options.allSelected)
-                                Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-                            contentDescription = if (options.allSelected)
-                                stringResource(R.string.campus_sync_deselect_all)
-                            else
-                                stringResource(R.string.campus_sync_select_all),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (options.allSelected)
-                                stringResource(R.string.campus_sync_deselect_all)
-                            else
-                                stringResource(R.string.campus_sync_select_all),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            text = stringResource(R.string.campus_sync_options),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Row(
+                            modifier = Modifier.clickable { toggleAll() },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (options.allSelected)
+                                    Icons.Filled.CheckCircle else Icons.Outlined.Circle,
+                                contentDescription = if (options.allSelected)
+                                    stringResource(R.string.campus_sync_deselect_all)
+                                else
+                                    stringResource(R.string.campus_sync_select_all),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = if (options.allSelected)
+                                    stringResource(R.string.campus_sync_deselect_all)
+                                else
+                                    stringResource(R.string.campus_sync_select_all),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 选项 1: 学期课程表
+                    SyncOptionCard(
+                        titleRes = R.string.campus_sync_courses,
+                        descRes = R.string.campus_sync_courses_desc,
+                        selected = options.courses,
+                        onClick = { toggleOption("courses") }
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 选项 2: 历年成绩单
+                    SyncOptionCard(
+                        titleRes = R.string.campus_sync_grades,
+                        descRes = R.string.campus_sync_grades_desc,
+                        selected = options.grades,
+                        onClick = { toggleOption("grades") }
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 选项 3: 期中期末考试
+                    SyncOptionCard(
+                        titleRes = R.string.campus_sync_exams,
+                        descRes = R.string.campus_sync_exams_desc,
+                        selected = options.exams,
+                        onClick = { toggleOption("exams") }
+                    )
+                }
+
+                // 底部按钮区域
+                Column(
+                    modifier = Modifier.padding(24.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            if (account.isBlank() || password.isBlank()) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.campus_sync_error_empty_fields),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@Button
+                            }
+                            viewModel.startSync(
+                                account = account.trim(),
+                                password = password,
+                                syncGrades = options.grades,
+                                syncExams = options.exams
+                            )
+                        },
+                        enabled = options.hasSelection && account.isNotBlank() && password.isNotBlank(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.campus_sync_start),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 选项 1: 学期课程表
-                SyncOptionCard(
-                    titleRes = R.string.campus_sync_courses,
-                    descRes = R.string.campus_sync_courses_desc,
-                    selected = options.courses,
-                    onClick = { toggleOption("courses") }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 选项 2: 历年成绩单
-                SyncOptionCard(
-                    titleRes = R.string.campus_sync_grades,
-                    descRes = R.string.campus_sync_grades_desc,
-                    selected = options.grades,
-                    onClick = { toggleOption("grades") }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 选项 3: 期中期末考试
-                SyncOptionCard(
-                    titleRes = R.string.campus_sync_exams,
-                    descRes = R.string.campus_sync_exams_desc,
-                    selected = options.exams,
-                    onClick = { toggleOption("exams") }
-                )
             }
 
-            // 底部按钮区域
-            Column(
-                modifier = Modifier.padding(24.dp)
-            ) {
-                Button(
-                    onClick = { onSyncStart(options) },
-                    enabled = options.hasSelection,
+            // ── Loading 遮罩层 ──
+            if (syncState is SyncUiState.Loading) {
+                val message = (syncState as SyncUiState.Loading).message
+
+                // 拦截系统返回键，防止用户在同步过程中退出
+                BackHandler(enabled = true) { /* 不做任何操作 —— 同步过程中禁止返回 */ }
+
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .zIndex(1f),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = stringResource(R.string.campus_sync_start),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 3.dp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = message,
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
+            }
+        }
+
+        // ── 副作用处理：Error / Success 的 Toast + 导航 ──
+        LaunchedEffect(syncState) {
+            when (val state = syncState) {
+                is SyncUiState.Error -> {
+                    // 先重置再弹 Toast，防止重组导致重复触发
+                    viewModel.resetToIdle()
+                    Toast.makeText(context, state.errorMsg, Toast.LENGTH_LONG).show()
+                }
+                is SyncUiState.Success -> {
+                    // 先重置再弹 Toast 并退出，防止重组导致重复触发
+                    viewModel.resetToIdle()
+                    Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                    onBack()
+                }
+                else -> { /* no-op */ }
             }
         }
     }

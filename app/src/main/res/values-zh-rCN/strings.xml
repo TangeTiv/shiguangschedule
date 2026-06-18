@@ -557,6 +557,13 @@
     <string name="campus_sync_exams">期中期末考试</string>
     <string name="campus_sync_exams_desc">获取最新的考场安排及座位号</string>
     <string name="campus_sync_start">开始安全同步</string>
+    <string name="campus_sync_account_label">学号</string>
+    <string name="campus_sync_password_label">密码</string>
+    <string name="campus_sync_account_placeholder">请输入学号</string>
+    <string name="campus_sync_password_placeholder">请输入密码</string>
+    <string name="campus_sync_error_empty_fields">请输入学号和密码</string>
+    <string name="a11y_show_password">显示密码</string>
+    <string name="a11y_hide_password">隐藏密码</string>
     <string name="campus_school_name">华南师范大学</string>
     <string name="campus_school_subtitle">一站式专属教务服务</string>
     <string name="campus_week_info">第 %1$d 周 · %2$s</string>

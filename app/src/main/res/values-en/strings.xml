@@ -555,6 +555,13 @@
     <string name="campus_sync_exams">Exam Schedule</string>
     <string name="campus_sync_exams_desc">Get the latest exam room assignments and seat numbers</string>
     <string name="campus_sync_start">Start Secure Sync</string>
+    <string name="campus_sync_account_label">Student ID</string>
+    <string name="campus_sync_password_label">Password</string>
+    <string name="campus_sync_account_placeholder">Enter student ID</string>
+    <string name="campus_sync_password_placeholder">Enter password</string>
+    <string name="campus_sync_error_empty_fields">Please enter student ID and password</string>
+    <string name="a11y_show_password">Show password</string>
+    <string name="a11y_hide_password">Hide password</string>
     <string name="campus_school_name">South China Normal University</string>
     <string name="campus_school_subtitle">One-stop Academic Services</string>
     <string name="campus_week_info">Week %1$d · %2$s</string>

@@ -1,0 +1,145 @@
+package com.xingheyuzhuan.shiguangschedule.ui.campus
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.xingheyuzhuan.shiguangschedule.data.db.main.ExamDao
+import com.xingheyuzhuan.shiguangschedule.data.db.main.GradeDao
+import com.xingheyuzhuan.shiguangschedule.data.db.main.toEntity
+import com.xingheyuzhuan.shiguangschedule.data.network.ScnuScraper
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Named
+
+/**
+ * 同步流程的 UI 状态密封接口。
+ *
+ * 各分支代表同步生命周期中的四个阶段：
+ * - [Idle]：等待用户操作
+ * - [Loading]：正在进行某个子步骤，[message] 描述当前正在执行的操作
+ * - [Success]：全部同步完成，[message] 为成功摘要
+ * - [Error]：同步过程中发生异常，[errorMsg] 为具体错误描述
+ */
+sealed interface SyncUiState {
+    /** 空闲状态，等待用户触发同步 */
+    data object Idle : SyncUiState
+
+    /** 同步进行中，[message] 描述当前正在执行的子步骤 */
+    data class Loading(val message: String) : SyncUiState
+
+    /** 同步圆满成功，[message] 为成功提示 */
+    data class Success(val message: String) : SyncUiState
+
+    /** 同步失败，[errorMsg] 为具体错误描述 */
+    data class Error(val errorMsg: String) : SyncUiState
+}
+
+/**
+ * 教务系统同步页面的 ViewModel。
+ *
+ * 负责将 [ScnuScraper]（网络）与 [GradeDao]/[ExamDao]（本地数据库）串联，
+ * 暴露 [syncUiState] 供 UI 层驱动全屏 Loading 遮罩和 Toast 反馈。
+ *
+ * 账号（学号）会在登录成功后自动持久化到 DataStore，下次打开页面时预填；
+ * 密码出于安全考虑**绝不**落盘存储。
+ */
+@HiltViewModel
+class CampusSyncViewModel @Inject constructor(
+    private val scraper: ScnuScraper,
+    private val gradeDao: GradeDao,
+    private val examDao: ExamDao,
+    @Named("AppSettings") private val dataStore: DataStore<Preferences>
+) : ViewModel() {
+
+    companion object {
+        /** DataStore 键：上一次成功登录的学号 */
+        val KEY_CAMPUS_ACCOUNT = stringPreferencesKey("campus_account")
+    }
+
+    // ── 同步状态 ──
+
+    private val _syncUiState = MutableStateFlow<SyncUiState>(SyncUiState.Idle)
+    val syncUiState: StateFlow<SyncUiState> = _syncUiState.asStateFlow()
+
+    // ── 持久化的学号（用于预填） ──
+
+    private val _savedAccount = MutableStateFlow("")
+    val savedAccount: StateFlow<String> = _savedAccount.asStateFlow()
+
+    init {
+        // 异步从 DataStore 加载上一次成功登录的学号，绝不阻塞主线程
+        viewModelScope.launch(Dispatchers.IO) {
+            val prefs = dataStore.data.first()
+            _savedAccount.value = prefs[KEY_CAMPUS_ACCOUNT] ?: ""
+        }
+    }
+
+    /**
+     * 开始教务系统同步。
+     *
+     * 整个流程在 [Dispatchers.IO] 中执行，通过 [runCatching] 统一捕获异常，
+     * 并通过 [_syncUiState] 实时反馈进度。
+     *
+     * @param account  学号
+     * @param password 密码（仅用于本次登录，不持久化）
+     * @param syncGrades 是否需要同步成绩数据
+     * @param syncExams  是否需要同步考试安排
+     */
+    fun startSync(account: String, password: String, syncGrades: Boolean, syncExams: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                // ── 第 1 步：登录统一身份认证 ──
+                _syncUiState.value = SyncUiState.Loading("正在登录统一身份认证…")
+                scraper.login(account, password)
+
+                // 登录成功 → 持久化学号，下次打开页面时自动预填
+                dataStore.edit { prefs ->
+                    prefs[KEY_CAMPUS_ACCOUNT] = account
+                }
+                _savedAccount.value = account
+
+                // ── 第 2 步：抓取并写入成绩数据 ──
+                if (syncGrades) {
+                    _syncUiState.value = SyncUiState.Loading("正在抓取成绩数据…")
+                    val gradeItems = scraper.fetchGrades()
+                    val gradeEntities = gradeItems.map { it.toEntity() }
+                    gradeDao.replaceAll(gradeEntities)
+                }
+
+                // ── 第 3 步：抓取并写入考试安排 ──
+                if (syncExams) {
+                    _syncUiState.value = SyncUiState.Loading("正在抓取考试安排…")
+                    val examItems = scraper.fetchExams()
+                    val examEntities = examItems.map { it.toEntity() }
+                    examDao.replaceAll(examEntities)
+                }
+
+                // ── 全部完成 ──
+                _syncUiState.value = SyncUiState.Success("同步圆满成功！")
+            }.onFailure { e ->
+                _syncUiState.value = SyncUiState.Error(
+                    e.message ?: "同步失败，请稍后重试"
+                )
+            }
+        }
+    }
+
+    /**
+     * 将同步状态重置为 [SyncUiState.Idle]。
+     *
+     * UI 层在消费完 [SyncUiState.Error] 或 [SyncUiState.Success] 后**必须**
+     * 调用此方法，否则重组（Recomposition）会导致 Toast 或导航重复触发。
+     */
+    fun resetToIdle() {
+        _syncUiState.value = SyncUiState.Idle
+    }
+}

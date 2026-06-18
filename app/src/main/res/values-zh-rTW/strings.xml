@@ -555,6 +555,13 @@
     <string name="campus_sync_exams">期中期末考試</string>
     <string name="campus_sync_exams_desc">獲取最新的考場安排及座位號</string>
     <string name="campus_sync_start">開始安全同步</string>
+    <string name="campus_sync_account_label">學號</string>
+    <string name="campus_sync_password_label">密碼</string>
+    <string name="campus_sync_account_placeholder">請輸入學號</string>
+    <string name="campus_sync_password_placeholder">請輸入密碼</string>
+    <string name="campus_sync_error_empty_fields">請輸入學號和密碼</string>
+    <string name="a11y_show_password">顯示密碼</string>
+    <string name="a11y_hide_password">隱藏密碼</string>
     <string name="campus_school_name">華南師範大學</string>
     <string name="campus_school_subtitle">一站式專屬教務服務</string>
     <string name="campus_week_info">第 %1$d 週 · %2$s</string>
