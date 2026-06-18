@@ -283,7 +283,7 @@ private fun PrimaryServiceGrid(onNavigate: (Destination) -> Unit) {
                 iconBgColor = Color(0xFF10B981),
                 title = stringResource(R.string.campus_card_grades),
                 subtitle = stringResource(R.string.campus_card_grades_desc),
-                onClick = { onNavigate(Destination.ScnuVerification) },
+                onClick = { onNavigate(Destination.Grades) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -293,7 +293,7 @@ private fun PrimaryServiceGrid(onNavigate: (Destination) -> Unit) {
                 iconBgColor = Color(0xFFF97316),
                 title = stringResource(R.string.campus_card_exams),
                 subtitle = stringResource(R.string.campus_card_exams_desc),
-                onClick = { /* TODO: 考试安排 */ },
+                onClick = { onNavigate(Destination.Exams) },
                 modifier = Modifier.weight(1f)
             )
             ServiceCard(

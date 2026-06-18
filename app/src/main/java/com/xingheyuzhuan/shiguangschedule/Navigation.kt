@@ -45,6 +45,9 @@ sealed interface Destination : NavKey {
     @Serializable data object ThemeSettings : Destination
     @Serializable data object SyncSelection : Destination
     @Serializable data object ScnuVerification : Destination
+    @Serializable data object Grades : Destination
+    @Serializable data object Exams : Destination
+
     // --- 动态传参页面 ---
 
     @Serializable

@@ -30,6 +30,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.xingheyuzhuan.shiguangschedule.data.model.StartScreen
 import com.xingheyuzhuan.shiguangschedule.ui.campus.CampusScreen
+import com.xingheyuzhuan.shiguangschedule.ui.campus.ExamScreen
+import com.xingheyuzhuan.shiguangschedule.ui.campus.GradeScreen
 import com.xingheyuzhuan.shiguangschedule.ui.campus.ScnuVerificationScreen
 import com.xingheyuzhuan.shiguangschedule.ui.campus.SyncSelectionScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.WeeklyScheduleScreen
@@ -197,6 +199,8 @@ fun ScreenContent(
         Destination.QuickDelete -> QuickDeleteScreen(onBack)
         Destination.ThemeSettings -> ThemeSettingsScreen(onBack = onBack)
         Destination.ScnuVerification -> ScnuVerificationScreen(onNavigate, onBack)
+        Destination.Grades -> GradeScreen(onBack = onBack)
+        Destination.Exams -> ExamScreen(onBack = onBack)
         Destination.SyncSelection -> {
             SyncSelectionScreen(
                 onNavigate = onNavigate,
