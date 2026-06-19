@@ -26,7 +26,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.shiguangschedule"
+        android:theme="@style/Theme.SCNUSchedule"
         tools:targetApi="33"
         android:enableOnBackInvokedCallback="true">
 
@@ -43,7 +43,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.shiguangschedule">
+            android:theme="@style/Theme.SCNUSchedule">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -64,7 +64,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/shiguangschedule_tiny_widget" />
+                android:resource="@xml/scnu_schedule_tiny_widget" />
         </receiver>
 
         <receiver
@@ -76,7 +76,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/shiguangschedule_compact_widget" />
+                android:resource="@xml/scnu_schedule_compact_widget" />
         </receiver>
 
 
@@ -89,7 +89,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/shiguangschedule_double_days_widget" />
+                android:resource="@xml/scnu_schedule_double_days_widget" />
         </receiver>
 
         <receiver
@@ -101,7 +101,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/shiguangschedule_list_vertical_widget" />
+                android:resource="@xml/scnu_schedule_list_vertical_widget" />
         </receiver>
 
 

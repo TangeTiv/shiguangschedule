@@ -120,7 +120,7 @@ object IcsExportTool {
     ): String {
         val ics = StringBuilder()
 
-        ics.append("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ShiGuangSchedule//ZH\r\n")
+        ics.append("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SCNUSchedule//ZH\r\n")
         ics.append("BEGIN:VTIMEZONE\r\nTZID:Asia/Shanghai\r\nBEGIN:STANDARD\r\n")
         ics.append("DTSTART:19700101T000000\r\nTZOFFSETFROM:+0800\r\nTZOFFSETTO:+0800\r\n")
         ics.append("END:STANDARD\r\nEND:VTIMEZONE\r\n")
@@ -131,7 +131,7 @@ object IcsExportTool {
             courses, timeSlots, semesterStartDate, semesterTotalWeeks, firstDayOfWeekInt, skippedDates
         ) { course, start, end, _ ->
             ics.append("BEGIN:VEVENT\r\n")
-            ics.append("UID:${UUID.randomUUID()}@shiguangschedule.com\r\n")
+            ics.append("UID:${UUID.randomUUID()}@scnu-schedule.com\r\n")
             ics.append("DTSTAMP:${formatDateTimeUtc(LocalDateTime.now())}\r\n")
             ics.append("DTSTART;TZID=Asia/Shanghai:${formatDateTimeLocal(start)}\r\n")
             ics.append("DTEND;TZID=Asia/Shanghai:${formatDateTimeLocal(end)}\r\n")

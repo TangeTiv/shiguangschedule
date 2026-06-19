@@ -31,7 +31,7 @@ val LocalIsDarkTheme = staticCompositionLocalOf { false }
  * 自动根据 AppSettingsModel 处理所有主题逻辑
  */
 @Composable
-fun ShiguangScheduleTheme(
+fun SCNUScheduleTheme(
     settings: AppSettingsModel,
     content: @Composable () -> Unit
 ) {
@@ -42,7 +42,7 @@ fun ShiguangScheduleTheme(
     }
 
     CompositionLocalProvider(LocalIsDarkTheme provides darkTheme) {
-        ShiguangScheduleTheme(
+        SCNUScheduleTheme(
             darkTheme = darkTheme,
             dynamicColor = settings.useDynamicColor,
             customLightPrimary = Color(settings.customLightPrimary),
@@ -56,7 +56,7 @@ fun ShiguangScheduleTheme(
  * 核心主题实现函数
  */
 @Composable
-fun ShiguangScheduleTheme(
+fun SCNUScheduleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     customLightPrimary: Color = Purple40,
