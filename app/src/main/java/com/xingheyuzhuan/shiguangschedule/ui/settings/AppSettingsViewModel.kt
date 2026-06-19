@@ -166,6 +166,16 @@ class SettingsViewModel @Inject constructor(
     }
 
     /**
+     * 标记首次启动引导已完成
+     */
+    fun onOnboardingCompleted() {
+        viewModelScope.launch {
+            val updated = uiState.value.appSettings.copy(onboardingCompleted = true)
+            appSettingsRepository.insertOrUpdateAppSettings(updated)
+        }
+    }
+
+    /**
      * 主题模式 (跟随系统/亮色/深色)
      */
     fun onThemeModeChanged(newMode: AppThemeMode) {

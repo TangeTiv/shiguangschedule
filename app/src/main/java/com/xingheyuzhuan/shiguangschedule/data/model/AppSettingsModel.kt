@@ -119,6 +119,9 @@ data class AppSettingsModel(
     /** * 自定义深色主题主色
      */
     val customDarkPrimary: Long = Purple80.toArgb().toLong(),
+
+    /** 是否已完成首次启动引导 */
+    val onboardingCompleted: Boolean = false,
 ) {
     /**
      * 将 DataStore 的 Key 定义在伴生对象中。
@@ -144,6 +147,7 @@ data class AppSettingsModel(
         val KEY_SYNC_COURSES = booleanPreferencesKey("sync_courses")
         val KEY_SYNC_GRADES = booleanPreferencesKey("sync_grades")
         val KEY_SYNC_EXAMS = booleanPreferencesKey("sync_exams")
+        val KEY_ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
 
         /**
          * 从 Preferences 中解析出 AppSettingsModel
@@ -164,6 +168,7 @@ data class AppSettingsModel(
                 useDynamicColor = prefs[KEY_USE_DYNAMIC_COLOR] ?: d.useDynamicColor,
                 customLightPrimary = prefs[KEY_CUSTOM_LIGHT_PRIMARY] ?: d.customLightPrimary,
                 customDarkPrimary = prefs[KEY_CUSTOM_DARK_PRIMARY] ?: d.customDarkPrimary,
+                onboardingCompleted = prefs[KEY_ONBOARDING_COMPLETED] ?: d.onboardingCompleted,
             )
         }
     }

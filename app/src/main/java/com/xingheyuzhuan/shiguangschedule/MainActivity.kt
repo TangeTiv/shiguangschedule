@@ -57,6 +57,7 @@ import com.xingheyuzhuan.shiguangschedule.ui.settings.style.StyleSettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.themesettings.ThemeSettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.time.TimeSlotManagementScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.update.UpdateRepoScreen
+import com.xingheyuzhuan.shiguangschedule.ui.components.OnboardingDialog
 import com.xingheyuzhuan.shiguangschedule.ui.theme.SCNUScheduleTheme
 import com.xingheyuzhuan.shiguangschedule.ui.today.TodayScheduleScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -74,6 +75,11 @@ class MainActivity : AppCompatActivity() {
             val state by viewModel.uiState.collectAsState()
 
             if (state.isReady) {
+                // 首次启动引导弹窗
+                if (!state.appSettings.onboardingCompleted) {
+                    OnboardingDialog(onDismiss = { viewModel.onOnboardingCompleted() })
+                }
+
                 SCNUScheduleTheme(settings = state.appSettings) {
                     val startDest = remember(state.appSettings.startScreen) {
                         when (state.appSettings.startScreen) {
