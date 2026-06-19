@@ -325,17 +325,15 @@ class CourseTableRepository @Inject constructor(
 }
 
 private val defaultTimeSlots = listOf(
-    TimeSlot(number = 1, startTime = "08:00", endTime = "08:45", courseTableId = "placeholder"),
-    TimeSlot(number = 2, startTime = "08:50", endTime = "09:35", courseTableId = "placeholder"),
-    TimeSlot(number = 3, startTime = "09:50", endTime = "10:35", courseTableId = "placeholder"),
-    TimeSlot(number = 4, startTime = "10:40", endTime = "11:25", courseTableId = "placeholder"),
-    TimeSlot(number = 5, startTime = "11:30", endTime = "12:15", courseTableId = "placeholder"),
-    TimeSlot(number = 6, startTime = "14:00", endTime = "14:45", courseTableId = "placeholder"),
-    TimeSlot(number = 7, startTime = "14:50", endTime = "15:35", courseTableId = "placeholder"),
-    TimeSlot(number = 8, startTime = "15:45", endTime = "16:30", courseTableId = "placeholder"),
-    TimeSlot(number = 9, startTime = "16:35", endTime = "17:20", courseTableId = "placeholder"),
-    TimeSlot(number = 10, startTime = "18:30", endTime = "19:15", courseTableId = "placeholder"),
-    TimeSlot(number = 11, startTime = "19:20", endTime = "20:05", courseTableId = "placeholder"),
-    TimeSlot(number = 12, startTime = "20:10", endTime = "20:55", courseTableId = "placeholder"),
-    TimeSlot(number = 13, startTime = "21:10", endTime = "21:55", courseTableId = "placeholder")
+    TimeSlot(number = 1, startTime = "08:30", endTime = "09:10", courseTableId = "placeholder"),
+    TimeSlot(number = 2, startTime = "09:20", endTime = "10:00", courseTableId = "placeholder"),
+    TimeSlot(number = 3, startTime = "10:20", endTime = "11:00", courseTableId = "placeholder"),
+    TimeSlot(number = 4, startTime = "11:10", endTime = "11:50", courseTableId = "placeholder"),
+    TimeSlot(number = 5, startTime = "14:30", endTime = "15:10", courseTableId = "placeholder"),
+    TimeSlot(number = 6, startTime = "15:20", endTime = "16:00", courseTableId = "placeholder"),
+    TimeSlot(number = 7, startTime = "16:10", endTime = "16:50", courseTableId = "placeholder"),
+    TimeSlot(number = 8, startTime = "17:00", endTime = "17:40", courseTableId = "placeholder"),
+    TimeSlot(number = 9, startTime = "19:00", endTime = "19:40", courseTableId = "placeholder"),
+    TimeSlot(number = 10, startTime = "19:50", endTime = "20:30", courseTableId = "placeholder"),
+    TimeSlot(number = 11, startTime = "20:40", endTime = "21:20", courseTableId = "placeholder")
 )
