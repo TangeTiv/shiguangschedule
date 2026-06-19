@@ -39,7 +39,10 @@ enum class StartScreen(val value: String, val labelRes: Int) {
     COURSE_SCHEDULE("COURSE_SCHEDULE", R.string.nav_course_schedule),
 
     /** 今日课表 */
-    TODAY_SCHEDULE("TODAY_SCHEDULE", R.string.nav_today_schedule);
+    TODAY_SCHEDULE("TODAY_SCHEDULE", R.string.nav_today_schedule),
+
+    /** 校园 */
+    CAMPUS("CAMPUS", R.string.nav_campus);
 
     companion object {
         fun fromString(value: String?): StartScreen {

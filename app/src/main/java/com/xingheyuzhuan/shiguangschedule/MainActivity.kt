@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
                         when (state.appSettings.startScreen) {
                             StartScreen.COURSE_SCHEDULE -> Destination.CourseSchedule
                             StartScreen.TODAY_SCHEDULE -> Destination.TodaySchedule
+                            StartScreen.CAMPUS -> Destination.Campus
                         }
                     }
                     AppNavigation(startDestination = startDest)
