@@ -102,6 +102,15 @@ interface CourseDao {
     suspend fun deleteCoursesByTableId(courseTableId: String)
 
     /**
+     * 删除指定课表中所有由考试同步生成的课程。
+     *
+     * 通过 id LIKE 'SYNC_EXAM_%' 精准匹配，不误伤用户手动创建的课程。
+     * 关联的 course_weeks 由 ForeignKey.CASCADE 自动清理。
+     */
+    @Query("DELETE FROM courses WHERE courseTableId = :tableId AND id LIKE 'SYNC_EXAM_%'")
+    suspend fun deleteSyncedExamsByTableId(tableId: String)
+
+    /**
      * 获取指定课表ID下，在特定星期和周次的所有课程及其周数。
      * 排序逻辑已调整，以正确处理同一天内的自定义时间日程。
      *
