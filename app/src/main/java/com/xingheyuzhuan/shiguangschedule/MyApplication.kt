@@ -3,6 +3,7 @@ package com.xingheyuzhuan.shiguangschedule
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.xingheyuzhuan.shiguangschedule.BuildConfig
 import com.xingheyuzhuan.shiguangschedule.data.sync.SyncManager
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -41,10 +42,29 @@ class MyApplication : Application(), Configuration.Provider {
 
     private suspend fun initOfflineRepo() = withContext(Dispatchers.IO) {
         val repoDir = File(filesDir, "repo")
-        if (repoDir.exists() && repoDir.list()?.isNotEmpty() == true) return@withContext
+        val versionFile = File(repoDir, ".extracted_version")
+        val currentVersion = BuildConfig.VERSION_CODE
+
+        // 判断是否需要解压
+        var needsExtract = !repoDir.exists() || repoDir.list()?.isEmpty() != false
+        if (!needsExtract && versionFile.exists()) {
+            val storedVersion = try { versionFile.readText().trim().toInt() } catch (_: Exception) { 0 }
+            needsExtract = storedVersion != currentVersion
+        }
+
+        if (!needsExtract) return@withContext
+
         if (!repoDir.exists()) repoDir.mkdirs()
+
         try {
+            // 1. 解压已有的 offline_repo（原逻辑）
             copyAssets("offline_repo", repoDir)
+
+            // 2. 解压预打包的仓库数据（学校适配脚本 + 索引）
+            copyAssets("repo", repoDir)
+
+            // 记录版本号
+            versionFile.writeText(currentVersion.toString())
         } catch (e: IOException) {
             e.printStackTrace()
         }
