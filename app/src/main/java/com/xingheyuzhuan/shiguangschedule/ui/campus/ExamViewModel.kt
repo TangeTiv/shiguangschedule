@@ -1,5 +1,6 @@
 package com.xingheyuzhuan.shiguangschedule.ui.campus
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xingheyuzhuan.shiguangschedule.data.db.main.ExamDao
@@ -12,26 +13,46 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 /**
- * 考试安排 ViewModel。
- *
- * 纯响应式设计——所有状态均由 Room Flow 驱动派生，无 init {} 副作用。
- *
- * 核心推导链：
- * 1. examDao.getAll() 是唯一的 Room 订阅（热流）
- * 2. availableTerms 由 allExams 派生（从 kssj 反推学年学期，去重 + 降序）
- * 3. _selectedTerm 初始为 null，通过 combine 优雅回退到第一个可用学期
- * 4. displayedExams 通过 combine(allExams, availableTerms, _selectedTerm) 派生，
- *    并按 kssj 正序排列，空时间沉底
+ * 考试展示模型，包装原始考试实体并附加倒计时与状态信息。
  */
+data class ExamUiModel(
+    val exam: ExamEntity,
+    val countdownText: String,
+    val isFinished: Boolean,
+    val statusColor: Color
+)
+
+/**
+ * 考试时间解析正则 —— 兼容两种格式：
+ * - "2026-06-29 14:30-16:30"（空格 + 范围）
+ * - "2026-06-29(14:30-16:30)"（括号包裹）
+ */
+private val KSSJ_REGEX = Regex(
+    """(\d{4}-\d{2}-\d{2})\s*\(?(\d{2}:\d{2})-(\d{2}:\d{2})\)?"""
+)
+
+/** 倒计时分级颜色 */
+private object CountdownColors {
+    val finished = Color(0xFFBDBDBD)       // 灰色
+    val inProgress = Color(0xFF10B981)     // 亮绿
+    val urgent = Color(0xFFEF4444)         // 红色
+    val tomorrow = Color(0xFFF97316)       // 深橙
+    val approaching = Color(0xFFF59E0B)    // 橙色
+    val normal = Color(0xFF6366F1)         // 主色调
+}
+
 @HiltViewModel
 class ExamViewModel @Inject constructor(
     private val examDao: ExamDao
 ) : ViewModel() {
-
-    // --- 唯一 Room 订阅（共享热流） ---
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _allExams: StateFlow<List<ExamEntity>> = examDao.getAll()
@@ -39,7 +60,7 @@ class ExamViewModel @Inject constructor(
 
     val allExams: StateFlow<List<ExamEntity>> = _allExams
 
-    // --- 学期列表（从 kssj 反推学年学期，去重 + 降序，无副作用） ---
+    // --- 学期列表 ---
 
     val availableTerms: StateFlow<List<String>> = _allExams.map { exams ->
         exams.map { resolveTerm(it.kssj) }
@@ -48,56 +69,83 @@ class ExamViewModel @Inject constructor(
             .sortedDescending()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // --- 用户选中学期（null = 尚未选择，自动回退到首个可用学期） ---
+    // --- 选中学期 ---
 
     private val _selectedTerm = MutableStateFlow<String?>(null)
 
-    /**
-     * 当前生效的学期。
-     * 若用户尚未手动选择（null），则自动取 availableTerms 的首项；
-     * 若 availableTerms 也为空，则返回空字符串。
-     */
     val selectedTerm: StateFlow<String> = combine(availableTerms, _selectedTerm) { terms, selected ->
         selected ?: terms.firstOrNull() ?: ""
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
-    // --- 当前学期考试列表（过滤 + 按时间正序，空时间沉底） ---
+    // --- 当前学期考试列表（ExamUiModel + 倒计时 + 沉底排序） ---
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val displayedExams: StateFlow<List<ExamEntity>> = combine(
+    val displayedExams: StateFlow<List<ExamUiModel>> = combine(
         _allExams, availableTerms, _selectedTerm
     ) { exams, terms, selected ->
         val effectiveTerm = selected ?: terms.firstOrNull() ?: ""
         val filtered = if (effectiveTerm.isBlank()) exams
         else exams.filter { resolveTerm(it.kssj) == effectiveTerm }
 
-        // 按考试时间正序排列，空时间（待定）沉底
-        filtered.sortedWith(
-            compareBy<ExamEntity> { it.kssj.isBlank() }
-                .thenBy { it.kssj }
-        )
+        val now = LocalDateTime.now()
+
+        filtered.map { exam ->
+            val parsed = parseExamTime(exam.kssj)
+            if (parsed != null) {
+                val (examDate, startTime, endTime) = parsed
+                computeCountdownStatus(exam, now, LocalDateTime.of(examDate, startTime), LocalDateTime.of(examDate, endTime))
+            } else {
+                ExamUiModel(exam = exam, countdownText = "", isFinished = false, statusColor = CountdownColors.normal)
+            }
+        }.let { list ->
+            val unfinished = list.filter { !it.isFinished }.sortedBy { getExamStartInstant(it.exam) }
+            val finished = list.filter { it.isFinished }.sortedBy { getExamStartInstant(it.exam) }
+            unfinished + finished
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // --- 用户操作 ---
-
-    /**
-     * 用户手动切换学期过滤器。
-     * 传入 null 即恢复默认（首个可用学期）。
-     */
     fun selectTerm(term: String?) {
         _selectedTerm.value = term
     }
 
-    // --- 纯函数：从考试时间反推学年学期 ---
+    // ═══════════════════════════════════════════════════════════════════════
+    // 纯函数：倒计时 & 时间解析
+    // ═══════════════════════════════════════════════════════════════════════
 
-    /**
-     * 从 kssj（格式 "YYYY-MM-DD HH:MM"）反推可读的学年学期。
-     *
-     * 规则（中国高校学年）：
-     * - 9月～次年2月 → 第一学期，学年 = Y-1-Y（如 2024-2025）
-     * - 3月～7月       → 第二学期，学年 = Y-1-Y（如 2024-2025）
-     * - 其他月份或解析失败 → 返回 ""
-     */
+    internal fun parseExamTime(kssj: String): Triple<LocalDate, LocalTime, LocalTime>? {
+        val match = KSSJ_REGEX.find(kssj) ?: return null
+        return try {
+            Triple(
+                LocalDate.parse(match.groupValues[1]),
+                LocalTime.parse(match.groupValues[2]),
+                LocalTime.parse(match.groupValues[3])
+            )
+        } catch (_: Exception) { null }
+    }
+
+    private fun computeCountdownStatus(exam: ExamEntity, now: LocalDateTime, start: LocalDateTime, end: LocalDateTime): ExamUiModel {
+        return if (now.isAfter(end)) {
+            ExamUiModel(exam, "已结束", true, CountdownColors.finished)
+        } else if (now.isAfter(start) && now.isBefore(end)) {
+            ExamUiModel(exam, "进行中", false, CountdownColors.inProgress)
+        } else if (now.toLocalDate() == start.toLocalDate()) {
+            val t = start.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))
+            ExamUiModel(exam, "今天 $t", false, CountdownColors.urgent)
+        } else {
+            val days = Duration.between(now.toLocalDate().atStartOfDay(), start.toLocalDate().atStartOfDay()).toDays()
+            when {
+                days == 1L -> ExamUiModel(exam, "明天", false, CountdownColors.tomorrow)
+                days in 2..3 -> ExamUiModel(exam, "剩 ${days} 天", false, CountdownColors.approaching)
+                days > 3 -> ExamUiModel(exam, "还有 ${days} 天", false, CountdownColors.normal)
+                else -> ExamUiModel(exam, "今天", false, CountdownColors.urgent)
+            }
+        }
+    }
+
+    private fun getExamStartInstant(exam: ExamEntity): LocalDateTime {
+        val p = parseExamTime(exam.kssj) ?: return LocalDateTime.of(9999, 12, 31, 23, 59)
+        return LocalDateTime.of(p.first, p.second)
+    }
+
     private fun resolveTerm(kssj: String): String {
         val parts = kssj.split("-")
         val year = parts.getOrNull(0)?.toIntOrNull() ?: return ""
