@@ -170,7 +170,16 @@ class AndroidBridge(
         }
     }
 
-    /** JS 调用：将课程数据传回 Android 端进行保存。 */
+    /**
+     * JS 调用：将课程数据传回 Android 端进行保存。
+     *
+     * @deprecated 自 2026-06 起，推荐使用 CampusSyncViewModel.startSync(syncCourses=true)
+     *             通过原生网络请求同步课表，替代 WebView JS 注入方式。
+     *             此方法保留仅用于向后兼容旧版导入页面。
+     */
+    @Deprecated(
+        message = "使用 CampusSyncViewModel.startSync(syncCourses=true) 替代 WebView 课程导入"
+    )
     @JavascriptInterface
     fun saveImportedCourses(coursesJsonString: String, promiseId: String) {
         Log.d(TAG, "接收到课程数据，大小: ${coursesJsonString.length / 1024} KB")
@@ -203,7 +212,11 @@ class AndroidBridge(
      *
      * @param configJsonString 课表配置的 JSON 字符串，对应 CourseConfigJsonModel。
      * @param promiseId 用于异步回调的 Promise ID。
+     * @deprecated 推荐使用原生教务系统同步替代 WebView 导入。
      */
+    @Deprecated(
+        message = "使用 CampusSyncViewModel.startSync(syncCourses=true) 替代 WebView 配置导入"
+    )
     @JavascriptInterface
     fun saveCourseConfig(configJsonString: String, promiseId: String) {
         Log.d(TAG, "接收到课表配置数据，大小: ${configJsonString.length} 字节")
@@ -234,7 +247,14 @@ class AndroidBridge(
         }
     }
 
-    /** JS 调用：将预设时间段数据传回 Android 端进行保存。 */
+    /**
+     * JS 调用：将预设时间段数据传回 Android 端进行保存。
+     *
+     * @deprecated 推荐使用原生教务系统同步替代 WebView 导入。
+     */
+    @Deprecated(
+        message = "使用 CampusSyncViewModel.startSync(syncCourses=true) 替代 WebView 时间段导入"
+    )
     @JavascriptInterface
     fun savePresetTimeSlots(timeSlotsJsonString: String, promiseId: String) {
         Log.d(TAG, "接收到预设时间段数据，大小: ${timeSlotsJsonString.length / 1024} KB")
