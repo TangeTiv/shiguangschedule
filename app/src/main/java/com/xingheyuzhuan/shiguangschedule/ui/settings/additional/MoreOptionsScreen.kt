@@ -3,6 +3,7 @@ package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -160,6 +161,21 @@ fun MoreOptionsScreen(
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary
                             )
+                        }
+                    )
+
+                    // 反馈与建议
+                    SettingListItem(
+                        icon = Icons.Default.Feedback,
+                        title = stringResource(R.string.item_feedback),
+                        subtitle = stringResource(R.string.item_feedback_subtitle),
+                        onClick = {
+                            runCatching {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wj.qq.com/s2/27078585/b3e3/"))
+                                context.startActivity(intent)
+                            }.onFailure {
+                                Toast.makeText(context, "无法打开浏览器，请检查系统设置", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     )
 

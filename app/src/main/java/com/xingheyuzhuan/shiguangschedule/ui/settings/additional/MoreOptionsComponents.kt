@@ -21,6 +21,7 @@ import com.xingheyuzhuan.shiguangschedule.R
 fun SettingListItem(
     icon: ImageVector,
     title: String,
+    subtitle: String? = null,
     onClick: () -> Unit,
     showDivider: Boolean = true,
     trailingContent: @Composable (() -> Unit)? = null
@@ -28,6 +29,7 @@ fun SettingListItem(
     ListItem(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         headlineContent = { Text(text = title) },
+        supportingContent = subtitle?.let { { Text(text = it, style = MaterialTheme.typography.bodySmall) } },
         leadingContent = {
             Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         },
