@@ -2,6 +2,7 @@ package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -31,8 +31,6 @@ import com.xingheyuzhuan.shiguangschedule.tool.UpdateChecker
 import com.xingheyuzhuan.shiguangschedule.tool.UpdateStatus
 import com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsViewModel
 import kotlinx.coroutines.launch
-
-private const val GITHUB_REPO_URL = "https://github.com/XingHeYuZhuan/shiguangschedule"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,7 +167,10 @@ fun MoreOptionsScreen(
                     SettingListItem(
                         icon = Icons.Default.Code,
                         title = stringResource(R.string.item_github_repo),
-                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, GITHUB_REPO_URL.toUri())) }
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("YOUR_GITHUB_REPO_URL_HERE"))
+                            context.startActivity(intent)
+                        }
                     )
 
                     // 开源许可证
