@@ -1,0 +1,18 @@
+{
+  "prod": {
+    "latestVersionCode": 1,
+    "latestVersionName": "1.0.0",
+    "changelog": "🎉 华师课表首个版本发布\n- 课表展示与管理\n- 校园教务系统集成\n- 今日视图与周视图\n- 丰富的个性化设置",
+    "downloadLinks": {
+      "universal": "https://github.com/TangeTiv/SCNU-Schedule/releases/download/v1.0.0/app-prod-universal.apk"
+    }
+  },
+  "dev": {
+    "latestVersionCode": 1,
+    "latestVersionName": "1.0.0-dev",
+    "changelog": "🔧 开发版更新",
+    "downloadLinks": {
+      "universal": "https://github.com/TangeTiv/SCNU-Schedule/releases/download/v1.0.0/app-dev-universal.apk"
+    }
+  }
+}
