@@ -1,8 +1,8 @@
 # 拾光课程表
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/XingHeYuZhuan/shiguangschedule/total)  ![GitHub License](https://img.shields.io/github/license/XingHeYuZhuan/shiguangschedule)  ![GitHub Repo stars](https://img.shields.io/github/stars/XingHeYuZhuan/shiguangschedule)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/XingHeYuZhuan/SCNU-Schedule/total)  ![GitHub License](https://img.shields.io/github/license/XingHeYuZhuan/SCNU-Schedule)  ![GitHub Repo stars](https://img.shields.io/github/stars/XingHeYuZhuan/SCNU-Schedule)
 #### 与我们交流和讨论 ![](https://img.shields.io/badge/QQ_频道-pd68794181-blue)
 
-本仓库为拾光课程表（shiguangschedule）项目的主仓库，包含软件的全部源代码及相关资源。项目采用开源模式，欢迎社区开发者参与贡献和适配。  
+本仓库为拾光课程表（SCNU-Schedule）项目的主仓库，包含软件的全部源代码及相关资源。项目采用开源模式，欢迎社区开发者参与贡献和适配。  
 
 ## 预览图
 
@@ -89,9 +89,9 @@
 
 ## 相关链接
 
-- 项目主页：[https://github.com/XingHeYuZhuan/shiguangschedule](https://github.com/XingHeYuZhuan/shiguangschedule)
+- 项目主页：[https://github.com/TangeTiv/SCNU-Schedule](https://github.com/TangeTiv/SCNU-Schedule)
 - 适配脚本仓库：[https://github.com/XingHeYuZhuan/shiguang_warehouse](https://github.com/XingHeYuZhuan/shiguang_warehouse)
-- 查看如何适配,Wiki：[https://github.com/XingHeYuZhuan/shiguangschedule/wiki](https://github.com/XingHeYuZhuan/shiguangschedule/wiki)
+- 查看如何适配,Wiki：[https://github.com/TangeTiv/SCNU-Schedule/wiki](https://github.com/TangeTiv/SCNU-Schedule/wiki)
 - 浏览器测试插件:[https://github.com/XingHeYuZhuan/shiguang_Tester](https://github.com/XingHeYuZhuan/shiguang_Tester)  
 
 - ###### 由[@Jursin](https://github.com/Jursin)主导并维护的网站:[https://sgschedule.jursin.top/](https://sgschedule.jursin.top/)  
@@ -107,6 +107,6 @@
 </a>
 
 ### 软件开发贡献  
-<a href="https://github.com/XingHeYuZhuan/shiguangschedule/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=XingHeYuZhuan/shiguangschedule" />
+<a href="https://github.com/XingHeYuZhuan/SCNU-Schedule/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=XingHeYuZhuan/SCNU-Schedule" />
 </a>
