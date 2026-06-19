@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import com.xingheyuzhuan.shiguangschedule.BuildConfig
 import com.xingheyuzhuan.shiguangschedule.data.model.SchoolHistoryModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -29,13 +30,23 @@ object SchoolRepository {
     )
 
     /**
-     * 首次启动时从 APK assets 复制预打包的仓库数据到内部存储。
+     * 从 APK assets 复制预打包的仓库数据到内部存储。
+     * 仅在首次安装或 APK 版本号变更时执行（确保更新 APK 后能获取最新的 bundled 数据）。
      */
     private fun ensureBundledData(context: Context) {
-        val repoDir = File(context.filesDir, "repo")
-        if (repoDir.exists()) return
+        val versionFile = File(context.filesDir, "repo/.extracted_version")
+        val currentVersion = BuildConfig.VERSION_CODE
+
+        // 如果已解压且版本号匹配，则跳过
+        if (versionFile.exists()) {
+            val storedVersion = try { versionFile.readText().trim().toInt() } catch (_: Exception) { 0 }
+            if (storedVersion == currentVersion) return
+        }
 
         try {
+            val repoDir = File(context.filesDir, "repo")
+            repoDir.mkdirs()
+
             // 复制 school_index.pb
             val indexDir = File(context.filesDir, "repo/index")
             indexDir.mkdirs()
@@ -57,7 +68,10 @@ object SchoolRepository {
                 }
             }
 
-            println("已从 APK assets 解压预打包的仓库数据")
+            // 记录版本号，下次版本变更时重新解压
+            versionFile.writeText(currentVersion.toString())
+
+            println("已从 APK assets 解压预打包仓库数据 (version=$currentVersion)")
         } catch (e: Exception) {
             println("警告：解压预打包仓库数据失败: ${e.message}")
         }
