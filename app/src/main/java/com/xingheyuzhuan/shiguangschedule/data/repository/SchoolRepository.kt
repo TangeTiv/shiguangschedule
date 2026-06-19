@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import school_index.Adapter
 import school_index.AdapterCategory
 import school_index.School
@@ -28,10 +29,48 @@ object SchoolRepository {
     )
 
     /**
+     * 首次启动时从 APK assets 复制预打包的仓库数据到内部存储。
+     */
+    private fun ensureBundledData(context: Context) {
+        val repoDir = File(context.filesDir, "repo")
+        if (repoDir.exists()) return
+
+        try {
+            // 复制 school_index.pb
+            val indexDir = File(context.filesDir, "repo/index")
+            indexDir.mkdirs()
+            context.assets.open("repo/index/school_index.pb").use { input ->
+                FileOutputStream(File(indexDir, "school_index.pb")).use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            // 遍历 assets/repo/schools/resources/ 复制所有资源文件
+            val resourcesDir = File(context.filesDir, "repo/schools/resources")
+            resourcesDir.mkdirs()
+            val assetResources = context.assets.list("repo/schools/resources") ?: emptyArray()
+            for (fileName in assetResources) {
+                context.assets.open("repo/schools/resources/$fileName").use { input ->
+                    FileOutputStream(File(resourcesDir, fileName)).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+            }
+
+            println("已从 APK assets 解压预打包的仓库数据")
+        } catch (e: Exception) {
+            println("警告：解压预打包仓库数据失败: ${e.message}")
+        }
+    }
+
+    /**
      * 核心加载函数：仅从内部存储文件读取 Protobuf 索引。
      */
     private suspend fun loadIndex(context: Context): SchoolIndex? {
         return withContext(Dispatchers.IO) {
+            // 首次启动时从 assets 解压预打包数据
+            ensureBundledData(context)
+
             val internalFile = File(context.filesDir, "repo/index/school_index.pb")
 
             if (!internalFile.exists()) {
