@@ -66,7 +66,7 @@ fun ScheduleGrid(
 
         // 计算尺寸
         val cellWidth = (screenWidth - style.timeColumnWidth) / displayDays.size
-        val totalGridHeight = style.sectionHeight * timeSlots.size
+        val totalGridHeight = (style.sectionHeight * timeSlots.size).coerceAtLeast(1.dp)
         val gridLineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
 
         // 转换绘图数据
