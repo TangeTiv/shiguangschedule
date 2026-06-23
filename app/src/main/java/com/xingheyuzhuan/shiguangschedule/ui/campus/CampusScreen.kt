@@ -60,21 +60,6 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
-// color palette for the warm-toned campus section
-private val SurfaceBackgroundColor = Color(0xFFFCF9F8)
-private val CardBackgroundColor = Color(0xFFEFE8E4)
-private val TextPrimary = Color(0xFF333333)
-private val TextSecondary = Color(0xFF666666)
-
-/**
- * 校园 Dashboard 主页面。
- *
- * 全新暖色调视觉设计：
- * - 页面底色 #FCF9F8，凸显卡片阴影层次
- * - WelcomeCard 全宽居中排版，Elevation = 8.dp
- * - 支持有课程时显示「今日速览」胶囊行（CircleShape Pill）
- * - 两级功能网格：主功能区（2列水平卡片）+ 次功能区（3列垂直卡片）
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CampusScreen(
@@ -85,29 +70,25 @@ fun CampusScreen(
     val campusState by campusViewModel.campusState.collectAsState()
 
     Scaffold(
-        containerColor = SurfaceBackgroundColor,
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
                         text = stringResource(R.string.campus_title_discover),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = TextPrimary
+                        fontSize = 20.sp
                     )
                 },
                 actions = {
                     IconButton(onClick = { onNavigate(Destination.Settings) }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "设置",
-                            tint = TextSecondary
+                            contentDescription = "设置"
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = SurfaceBackgroundColor
-                )
+                colors = TopAppBarDefaults.topAppBarColors()
             )
         },
         bottomBar = {
@@ -124,22 +105,22 @@ fun CampusScreen(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // 1. 欢迎卡片（含今日速览胶囊行）
+            // 欢迎卡片
             item { WelcomeCard(state = campusState) }
 
-            // 2. 教务与学业主功能区
+            // 教务与学业主功能区
             item {
                 Text(
                     text = stringResource(R.string.campus_section_academic),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
                 )
                 PrimaryServiceGrid(onNavigate = onNavigate)
             }
 
-            // 3. 校园服务次功能区
+            // 校园服务次功能区
             item { SecondaryServiceGrid() }
         }
     }
@@ -147,15 +128,6 @@ fun CampusScreen(
 
 // region 欢迎卡片
 
-/**
- * 全宽横向欢迎卡片（暖色调）。
- *
- * 布局（全部居中对齐）：
- * 1. 周次 + 星期（13sp，浅色）
- * 2. 学校名称（26sp，ExtraBold）
- * 3. 副标题（14sp）
- * 4. 有课程时：24dp 间距 → 今日速览胶囊行（LazyRow，CircleShape）
- */
 @Composable
 private fun WelcomeCard(state: CampusUiState) {
     val weekNumber = state.weekNumber
@@ -164,7 +136,7 @@ private fun WelcomeCard(state: CampusUiState) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBackgroundColor),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(
@@ -173,33 +145,29 @@ private fun WelcomeCard(state: CampusUiState) {
                 .padding(top = 28.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 顶层：周次信息（次要、轻量）
             Text(
                 text = stringResource(R.string.campus_week_info, weekNumber ?: 1, dayOfWeekName),
                 fontSize = 13.sp,
-                color = TextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 视觉中心：学校名称（最大、最粗）
             Text(
                 text = stringResource(R.string.campus_school_name),
                 fontSize = 26.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 副标题
             Text(
                 text = stringResource(R.string.campus_school_subtitle),
                 fontSize = 14.sp,
-                color = TextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // 今日速览胶囊（仅在有课程数据时展示）
             if (state.todayCourses.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(24.dp))
                 CourseCapsuleRow(courses = state.todayCourses)
@@ -212,12 +180,6 @@ private fun WelcomeCard(state: CampusUiState) {
 
 // region 今日速览胶囊行
 
-/**
- * 横向滚动的课程胶囊行（位于 WelcomeCard 内部）。
- *
- * 胶囊使用 CircleShape（两端完美半圆），白色半透明背景，
- * 文本格式：「08:30 【课程名 - 地点】」。
- */
 @Composable
 private fun CourseCapsuleRow(courses: List<TodayCourseDisplay>) {
     LazyRow(
@@ -231,7 +193,7 @@ private fun CourseCapsuleRow(courses: List<TodayCourseDisplay>) {
         ) { course ->
             Surface(
                 shape = CircleShape,
-                color = Color.White.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
                 modifier = Modifier.height(36.dp)
             ) {
                 Row(
@@ -242,13 +204,13 @@ private fun CourseCapsuleRow(courses: List<TodayCourseDisplay>) {
                         text = course.startTime,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "【${course.courseName} - ${course.location}】",
                         fontSize = 13.sp,
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -262,11 +224,6 @@ private fun CourseCapsuleRow(courses: List<TodayCourseDisplay>) {
 
 // region 主功能网格（2列水平卡片）
 
-/**
- * 主功能区网格（2 列 × 2 行）。
- *
- * 水平排版 Card：40.dp 圆角图标 + 右侧标题与副标题。
- */
 @Composable
 private fun PrimaryServiceGrid(onNavigate: (Destination) -> Unit) {
     val context = LocalContext.current
@@ -310,10 +267,6 @@ private fun PrimaryServiceGrid(onNavigate: (Destination) -> Unit) {
     }
 }
 
-/**
- * 单张主功能卡片（水平排版）。
- * 左侧：40.dp 圆角图标背景盒 → 右侧：标题 + 副标题。
- */
 @Composable
 private fun ServiceCard(
     icon: ImageVector,
@@ -327,7 +280,7 @@ private fun ServiceCard(
         onClick = onClick,
         modifier = modifier.height(84.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -336,7 +289,6 @@ private fun ServiceCard(
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 圆角图标背景
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -357,14 +309,14 @@ private fun ServiceCard(
                     text = title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = subtitle,
                     fontSize = 11.sp,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -377,11 +329,6 @@ private fun ServiceCard(
 
 // region 次功能网格（3列垂直卡片）
 
-/**
- * 次功能区网格（3 列横向排列）。
- *
- * 垂直排版 Card：36.dp 圆角图标 + 下方单行文字。
- */
 @Composable
 private fun SecondaryServiceGrid() {
     Row(
@@ -409,10 +356,6 @@ private fun SecondaryServiceGrid() {
     }
 }
 
-/**
- * 单张次功能卡片（垂直排版）。
- * 上方：36.dp 圆角图标 → 下方：标题文字。
- */
 @Composable
 private fun SmallServiceCard(
     icon: ImageVector,
@@ -423,7 +366,7 @@ private fun SmallServiceCard(
     Card(
         modifier = modifier.height(96.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -450,7 +393,7 @@ private fun SmallServiceCard(
                 text = title,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1
             )
         }

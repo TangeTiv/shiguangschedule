@@ -1,18 +1,18 @@
 {
   "prod": {
-    "latestVersionCode": 3,
-    "latestVersionName": "1.0.3",
-    "changelog": "🎉 v1.0.3 更新\n- 修复了初次启动，数据库可能会构建失败的bug\n- 优化的课表界面的线条 显示逻辑\n",
+    "latestVersionCode": 4,
+    "latestVersionName": "1.1.0",
+    "changelog": "🎉 v1.1.0 更新\n- 修复了打包仓库资源时无法递归复制的问题\n- 校园地图启动方式改为使用 weixin:// URL Scheme\n",
     "downloadLinks": {
-      "universal": "https://github.com/TangeTiv/SCNU-Schedule/releases/download/v1.0.3/SCNU-Schedule.apk"
+      "universal": "https://github.com/TangeTiv/SCNU-Schedule/releases/download/v1.1.0/SCNU-Schedule.apk"
     }
   },
   "dev": {
-    "latestVersionCode": 3,
-    "latestVersionName": "1.0.3-dev",
-    "changelog": "🎉 v1.0.3 更新\n- 修复了初次启动，数据库可能会构建失败的bug\n- 优化的课表界面的线条 显示逻辑\n",
+    "latestVersionCode": 4,
+    "latestVersionName": "1.1.0-dev",
+    "changelog": "🎉 v1.1.0 更新\n- 修复了打包仓库资源时无法递归复制的问题\n- 校园地图启动方式改为使用 weixin:// URL Scheme\n",
     "downloadLinks": {
-      "universal": "https://github.com/TangeTiv/SCNU-Schedule/releases/download/v1.0.3/SCNU-Schedule.apk"
+      "universal": "https://github.com/TangeTiv/SCNU-Schedule/releases/download/v1.1.0/SCNU-Schedule.apk"
     }
   }
 }

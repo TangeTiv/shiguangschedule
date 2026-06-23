@@ -1,6 +1,6 @@
 <resources>
     <!-- Basic App Information -->
-    <string name="app_name">SCNU Schedule</string>
+    <string name="app_name">师陶学程</string>
     
     <!-- Common Buttons and Messages -->
     <string name="action_confirm">Confirm</string>
