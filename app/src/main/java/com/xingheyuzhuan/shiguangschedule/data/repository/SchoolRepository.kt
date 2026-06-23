@@ -56,17 +56,9 @@ object SchoolRepository {
                 }
             }
 
-            // 遍历 assets/repo/schools/resources/ 复制所有资源文件
+            // 递归复制 assets/repo/schools/resources/ 下所有子目录和文件
             val resourcesDir = File(context.filesDir, "repo/schools/resources")
-            resourcesDir.mkdirs()
-            val assetResources = context.assets.list("repo/schools/resources") ?: emptyArray()
-            for (fileName in assetResources) {
-                context.assets.open("repo/schools/resources/$fileName").use { input ->
-                    FileOutputStream(File(resourcesDir, fileName)).use { output ->
-                        input.copyTo(output)
-                    }
-                }
-            }
+            copyAssetDir(context, "repo/schools/resources", resourcesDir)
 
             // 记录版本号，下次版本变更时重新解压
             versionFile.writeText(currentVersion.toString())
@@ -74,6 +66,27 @@ object SchoolRepository {
             println("已从 APK assets 解压预打包仓库数据 (version=$currentVersion)")
         } catch (e: Exception) {
             println("警告：解压预打包仓库数据失败: ${e.message}")
+        }
+    }
+
+    /**
+     * 递归从 APK assets 复制整个目录树到内部存储。
+     */
+    private fun copyAssetDir(context: Context, assetPath: String, targetDir: File) {
+        val list = context.assets.list(assetPath) ?: return
+        for (item in list) {
+            val childAssetPath = "$assetPath/$item"
+            val childFile = File(targetDir, item)
+            try {
+                context.assets.open(childAssetPath).use { input ->
+                    childFile.parentFile?.mkdirs()
+                    FileOutputStream(childFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+            } catch (_: java.io.IOException) {
+                copyAssetDir(context, childAssetPath, childFile)
+            }
         }
     }
 
